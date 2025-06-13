@@ -1,19 +1,15 @@
-// server.js - Starter Express server for Week 2 assignment
-
-// Import required modules
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
+const morgan = require('morgan');
+const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware');
+const productsRouter = require('./routes/productsRoutes');
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware setup
-app.use(bodyParser.json());
-
-// Sample in-memory products database
-let products = [
+// Sample products data
+const products = [
   {
     id: '1',
     name: 'Laptop',
@@ -22,50 +18,27 @@ let products = [
     category: 'electronics',
     inStock: true
   },
-  {
-    id: '2',
-    name: 'Smartphone',
-    description: 'Latest model with 128GB storage',
-    price: 800,
-    category: 'electronics',
-    inStock: true
-  },
-  {
-    id: '3',
-    name: 'Coffee Maker',
-    description: 'Programmable coffee maker with timer',
-    price: 50,
-    category: 'kitchen',
-    inStock: false
-  }
+  // ... other sample products
 ];
 
-// Root route
+// Middleware
+app.use(bodyParser.json());
+app.use(morgan('dev'));
+
+// Routes
 app.get('/', (req, res) => {
   res.send('Welcome to the Product API! Go to /api/products to see all products.');
 });
 
-// TODO: Implement the following routes:
-// GET /api/products - Get all products
-// GET /api/products/:id - Get a specific product
-// POST /api/products - Create a new product
-// PUT /api/products/:id - Update a product
-// DELETE /api/products/:id - Delete a product
+app.use('/api/products', productsRouter(products));
 
-// Example route implementation for GET /api/products
-app.get('/api/products', (req, res) => {
-  res.json(products);
-});
+// Error handling
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-// TODO: Implement custom middleware for:
-// - Request logging
-// - Authentication
-// - Error handling
-
-// Start the server
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
-// Export the app for testing purposes
-module.exports = app; 
+module.exports = app;
